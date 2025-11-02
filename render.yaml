@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: diana-bot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python userbot.py
+    plan: free
