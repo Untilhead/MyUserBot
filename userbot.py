@@ -108,5 +108,18 @@ async def handle_message(client, message):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    print("UserBot запускается... Войдите в аккаунт.")
-    app.run()
+    print("UserBot запускается... Автовход через сессию.")
+    
+    async def main():
+        try:
+            await app.start()
+            print("Цифровая копия подключена! Бот работает 24/7.")
+            me = await app.get_me()
+            print(f"Вошли как @{me.username or me.first_name}")
+            await asyncio.Event().wait()  # Держим живым
+        except Exception as e:
+            print(f"Ошибка входа: {e}")
+            print("Проверь API_ID, API_HASH, PHONE в переменных Render.")
+    
+    # Запуск без input()
+    app.run(main())
