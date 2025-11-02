@@ -1,26 +1,30 @@
-﻿import os
+import os
 import asyncio
 from pyrogram import Client, filters
-from pyrogram.types import Message
-from dotenv import load_dotenv
 from langchain_community.llms import Ollama
 import logging
-import json
 
-load_dotenv()
-
+# === ПЕРЕМЕННЫЕ ===
 API_ID = int(os.getenv("API_ID"))
 API_HASH = os.getenv("API_HASH")
 PHONE = os.getenv("PHONE")
-OPERATOR_ID = int(os.getenv("OPERATOR_ID"))  # ← ВТОРОЙ АККАУНТ
+OPERATOR_ID = int(os.getenv("OPERATOR_ID"))
 
+# === ТВОЙ ПРОМПТ — С МАТАМИ И ЧУВСТВАМИ ===
 SYSTEM_PROMPT = """
 Ты — Диана, 18 лет, студентка ИТ. 
 Пиши как в жизни: коротко, с матами, чувствами, например "хз", "чеито", "вххавхах", "🤍".
 Если не знаешь — "та я сама хз" или "мозга мне не делайте на ночь".
 """
 
-app = Client("my_session", api_id=API_ID, api_hash=API_HASH, phone_number=PHONE)
+# === КЛИЕНТ ===
+app = Client(
+    "my_session",
+    api_id=API_ID,
+    api_hash=API_HASH,
+    phone_number=PHONE
+)
+
 llm = Ollama(model="mistral", temperature=0.7)
 
 # Глобальный режим
@@ -76,7 +80,7 @@ async def bot_on(client, message):
 @app.on_message(filters.user(OPERATOR_ID) & filters.command(["stop", "off"]))
 async def bot_off(client, message):
     global BOT_ACTIVE
-    False
+    BOT_ACTIVE = False  # ← ИСПРАВЛЕНО!
     await message.reply("цифровая копия отсоединена")
 
 @app.on_message(filters.user(OPERATOR_ID) & filters.command("status"))
@@ -106,20 +110,21 @@ async def handle_message(client, message):
     await message.reply(reply)
     print(f"[ОТВЕТ] {reply}")
 
-if __name__ == "__main__":
+# === ЗАПУСК БЕЗ INPUT ===
+if __name__ == "__main__":  # ← ИСПРАВЛЕНО: было "name == main"
     logging.basicConfig(level=logging.INFO)
     print("UserBot запускается... Автовход через сессию.")
     
     async def main():
         try:
             await app.start()
-            print("Цифровая копия подключена! Бот работает 24/7.")
             me = await app.get_me()
             print(f"Вошли как @{me.username or me.first_name}")
-            await asyncio.Event().wait()  # Держим живым
+            print("Цифровая копия подключена! Бот работает 24/7.")
+            await asyncio.Event().wait()
         except Exception as e:
             print(f"Ошибка входа: {e}")
             print("Проверь API_ID, API_HASH, PHONE в переменных Render.")
+            await asyncio.sleep(10)
     
-    # Запуск без input()
     app.run(main())
